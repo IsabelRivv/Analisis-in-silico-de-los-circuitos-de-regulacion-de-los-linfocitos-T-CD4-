@@ -14,10 +14,19 @@ Por medio de estas redes booleanas se pretende modelar los circuitos de regulaci
 
 Se utilizaron redes booleanas para representar las distintas subredes entre los tipos de linfocitos de las T CD4+, por medio del software yEd.
 
-**Th1 vs Th2**
-  <img width="568" height="495" alt="Th1vsTh2" src="https://github.com/user-attachments/assets/cdfae5c2-4462-4779-84e1-ad980b20c6a4" />
-2. Th1 vs Th17
-  <img width="568" height="495" alt="Th1vsTh17" src="https://github.com/user-attachments/assets/72a6d99f-1b19-4805-a44a-19c921595b93" />
+1. Th1 vs Th2 - <img width="568" height="495" alt="Th1vsTh2" src="https://github.com/user-attachments/assets/cdfae5c2-4462-4779-84e1-ad980b20c6a4" />
+2. Th1 vs Th17  - <img width="568" height="495" alt="Th1vsTh17" src="https://github.com/user-attachments/assets/72a6d99f-1b19-4805-a44a-19c921595b93" />
+3.
+4.
+5.
+6.
+7.
+8.
+9.
+10.
+11. 
+   
+
 
 
 
