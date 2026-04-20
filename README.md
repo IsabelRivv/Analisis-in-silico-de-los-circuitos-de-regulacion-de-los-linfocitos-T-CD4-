@@ -12,19 +12,22 @@ Por medio de estas redes booleanas se pretende modelar los circuitos de regulaci
 
 ##Metodología 
 
-Se utilizaron redes booleanas para representar las distintas subredes entre los tipos de linfocitos de las T CD4+, por medio del software yEd.
+Se utilizaron redes booleanas para representar las distintas subredes entre los tipos de linfocitos de las T CD4+, por medio del software yEd. Las lineas rojas representan inhibición y las flechas negras indican activación.
 
-1. Th1 vs Th2 - <img width="568" height="495" alt="Th1vsTh2" src="https://github.com/user-attachments/assets/cdfae5c2-4462-4779-84e1-ad980b20c6a4" />
-2. Th1 vs Th17  - <img width="568" height="495" alt="Th1vsTh17" src="https://github.com/user-attachments/assets/72a6d99f-1b19-4805-a44a-19c921595b93" />
-3.
-4.
-5.
-6.
-7.
-8.
-9.
-10.
-11. 
+Quedando de la siguiente manera:
+
+1. Th1 (verde) vs Th2 (azul) <img width="568" height="495" alt="Th1vsTh2" src="https://github.com/user-attachments/assets/cdfae5c2-4462-4779-84e1-ad980b20c6a4" />
+2. Th1 (verde) vs Th17 (rosa)  <img width="568" height="495" alt="Th1vsTh17" src="https://github.com/user-attachments/assets/72a6d99f-1b19-4805-a44a-19c921595b93" />
+3. Th1 (verde) vs iTreg (morado) <img width="568" height="495" alt="Th1vsiTreg" src="https://github.com/user-attachments/assets/5010bad0-2a48-4c1f-8d93-d48ba14c78ed" /> 
+4. Th2 (azul) vs Th17 (rosa) <img width="568" height="495" alt="Th2vsTh17" src="https://github.com/user-attachments/assets/13ab3ab8-c418-41e7-987f-433a05ab1f41" />
+5. Th2 (azul) vs iTreg (morado) <img width="568" height="495" alt="Th2vsiTreg" src="https://github.com/user-attachments/assets/465bbad3-a2b3-4a7c-8e7d-f0ef14fed906" />
+6. Th17 (rosa) vs iTreg (morado) <img width="568" height="495" alt="Captura de pantalla 2026-04-19 a la(s) 11 31 33 p m" src="https://github.com/user-attachments/assets/f4e7281e-a5d2-4a68-b644-3169b60ca1df" />
+
+Estas subredes fueron exportadas en formato .graphml, sin embargo fue necesario agregar etiquetas a cada uno de los nodos y el valor de la interacción (1 o -1) a cada una de las flechas anterior a la exportación del archivo. De esta forma el programa yEd guarda esta información necesario para el analisis de las subredes. 
+
+###Analisis de las subredes
+
+
    
 
 
