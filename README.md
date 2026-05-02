@@ -18,7 +18,8 @@ Quedando de la siguiente manera:
 
 1. Th1 (verde) vs Th2 (azul) <img width="568" height="495" alt="Th1vsTh2" src="https://github.com/user-attachments/assets/cdfae5c2-4462-4779-84e1-ad980b20c6a4" />
 
-2. Th1 (verde) vs Th17 (rosa)  <img width="568" height="495" alt="Th1vsTh17" src="https://github.com/user-attachments/assets/72a6d99f-1b19-4805-a44a-19c921595b93" />
+2. Th1 (verde) vs Th17 (rosa)  <img width="468" height="408" alt="Captura de pantalla 2026-05-02 a la(s) 5 28 23 p m" src="https://github.com/user-attachments/assets/925a1b3f-b369-4799-9bd9-24035f2fdd81" />
+
 
 3. Th1 (verde) vs iTreg (morado) <img width="568" height="495" alt="Th1vsiTreg" src="https://github.com/user-attachments/assets/5010bad0-2a48-4c1f-8d93-d48ba14c78ed" /> 
 
@@ -338,4 +339,152 @@ grafo_a_matrizadyacencia(G_Th17)
 </div>
 
 
+Despues se realizo una tabla de metricas entre todas las subredes, haciendo un conteo del numero de nodos, numero de interacciones positivas totales, numero de interacciones negativas totales, loops positivos y loops negativos. Este conteo se hizo a partir de las tablas de interacciones obtenidas anteriormente. 
 
+Inicialmente se aseguro que los valores fueran unicamente de 1, -1 o 0, para despues contar las interacciones positivas y negativas.
+
+``` Python
+
+df_ti = grafo_a_tablainterracciones(G)
+        
+        df_ti['Interaction (Valor)'] = df_ti['Interaction (Valor)'].apply(lambda x: 1 if x > 0 else (-1 if x < 0 else 0)) #Asegura que los valores sean solo 1, -1 o 0
+        df_ti = df_ti.drop_duplicates() 
+
+        int_pos = len(df_ti[df_ti['Interaction (Valor)'] == 1]) #Cuenta interacciones positivas
+        int_neg = len(df_ti[df_ti['Interaction (Valor)'] == -1]) #Cuenta interacciones negativas
+  ```       
+
+Después se filtraron las auto-regulaciones para posteriormente hacer el conteo, tanto de las auto-regulaciones negativas como las positivas. 
+
+``` Python
+        autos = df_ti[df_ti['Source'] == df_ti['Target']] #Filtra auto-regulación
+        l_pos = len(autos[autos['Interaction (Valor)'] == 1]) #Cuenta loops positivos
+        l_neg = len(autos[autos['Interaction (Valor)'] == -1]) #Cuenta loops negativos
+```
+
+Posteriormente se hizo el conteo de bucles entre nodos distintos (que no son consideradas auto-regulaciones).
+
+
+``` Python
+    hetero = df_ti[df_ti['Source'] != df_ti['Target']]
+        parejas = pd.merge(hetero, hetero, #Cuenta bucles recíprocos entre nodos distintos
+                           left_on=['Source', 'Target'], 
+                           right_on=['Target', 'Source'], 
+                           suffixes=('_a', '_b'))
+        
+        parejas = parejas[parejas['Source_a'] < parejas['Target_a']] #Evita contar cada pareja dos veces
+        l_pos += len(parejas[(parejas['Interaction (Valor)_a'] == 1) & (parejas['Interaction (Valor)_b'] == 1)]) #Cuenta parejas recíprocas positivas
+        l_neg += len(parejas[(parejas['Interaction (Valor)_a'] == -1) & (parejas['Interaction (Valor)_b'] == -1)]) #Cuenta parejas recíprocas negativas
+
+```
+
+Al final se hizo el conteo total de acuerdo a la tabla de metricas ( N_nodos, Inter +, Inter -, Loops +, Loops -)
+
+``` Python
+ partes = nombre_base.split('vs') if 'vs' in nombre_base else [nombre_base, "N/A"]
+        dicc_m[nombre_base] = {
+            'Tipo 1': partes[0].strip(), 'Tipo 2': partes[1].strip(), 
+            'N nodos': len(G.nodes()), 
+            'Inter +': int_pos, 'Inter -': int_neg, #Suma de interacciones positivas y negativas
+            'Loops +': l_pos, 'Loops -': l_neg #Suma de loops positivos y negativos
+        }
+```
+
+Dando como resultado la siguiente tabla de metricas:
+
+<img width="523" height="301" alt="Captura de pantalla 2026-05-02 a la(s) 5 21 17 p m" src="https://github.com/user-attachments/assets/47d3f3a7-f110-4140-8ef7-53c0079efa04" />
+
+
+Por ultimo se realizo una automatización, contemplanto las matrices de adyacencia, tabla de interacciones y la tabla de metricas, para cada subred. Complementando que cada uno de los resultados fuera guardado en archivos .csv
+
+``` Python 
+import glob
+import os
+import networkx as nx
+import pandas as pd
+
+
+carpeta_entrada = '/Users/isabelrivv/Desktop/Lab-Mariana/Redes'
+carpeta_matrices = '/Users/isabelrivv/Desktop/Lab-Mariana/Matrices'
+ruta_tabla_final = '/Users/isabelrivv/Desktop/Lab-Mariana/Tabla_metricas.csv'
+
+dicc_m = {}
+
+
+def grafo_a_matrizadyacencia(G):
+    mapping = {node: data.get('name', node) for node, data in G.nodes(data=True)} 
+    G_renombrado = nx.relabel_nodes(G, mapping)
+    nodos_ordenados = sorted(list(G_renombrado.nodes())) 
+    matriz_df = nx.to_pandas_adjacency(G_renombrado, nodelist=nodos_ordenados, weight='interaction')
+    matriz_df = matriz_df.applymap(lambda x: 1 if x > 0 else (-1 if x < 0 else 0))
+    return matriz_df
+
+def grafo_a_tablainterracciones(G):
+  dicc_interacciones = {
+    'Source': "origen",
+    'Target': "destino",
+    'Interaction (Valor)': "valor"
+  }
+  
+  rows = []
+  for u, v, data in G.edges(data=True):
+    origen = G.nodes[u].get('name', u)
+    destino = G.nodes[v].get('name', v)
+    valor = data.get('interaction', 0)
+
+    rows.append({
+      'Source': origen,
+      'Target': destino,
+      'Interaction (Valor)': valor
+    })
+ df = pd.DataFrame(rows)
+  return df
+
+a_graphml = glob.glob(os.path.join(carpeta_entrada, '*.graphml'))
+
+for ruta_completa in a_graphml:
+    nombre_base = os.path.basename(ruta_completa).replace('.graphml', '')
+    
+    try:
+        G = nx.read_graphml(ruta_completa) #Cargar grafo
+
+        df_matriz = grafo_a_matrizadyacencia(G)
+        df_matriz.to_csv(os.path.join(carpeta_matrices, f"matriz_{nombre_base}.csv")) #Guardar matriz de adyacencia
+        
+        df_ti = grafo_a_tablainterracciones(G)
+        
+        df_ti['Interaction (Valor)'] = df_ti['Interaction (Valor)'].apply(lambda x: 1 if x > 0 else (-1 if x < 0 else 0)) #Asegura que los valores sean solo 1, -1 o 0
+        df_ti = df_ti.drop_duplicates() 
+
+        int_pos = len(df_ti[df_ti['Interaction (Valor)'] == 1]) #Cuenta interacciones positivas
+        int_neg = len(df_ti[df_ti['Interaction (Valor)'] == -1]) #Cuenta interacciones negativas
+        
+        autos = df_ti[df_ti['Source'] == df_ti['Target']] #Filtra auto-regulación
+        l_pos = len(autos[autos['Interaction (Valor)'] == 1]) #Cuenta loops positivos
+        l_neg = len(autos[autos['Interaction (Valor)'] == -1]) #Cuenta loops negativos
+        
+        hetero = df_ti[df_ti['Source'] != df_ti['Target']]
+        parejas = pd.merge(hetero, hetero, #Cuenta bucles recíprocos entre nodos distintos
+                           left_on=['Source', 'Target'], 
+                           right_on=['Target', 'Source'], 
+                           suffixes=('_a', '_b'))
+        
+        parejas = parejas[parejas['Source_a'] < parejas['Target_a']] #Evita contar cada pareja dos veces
+        l_pos += len(parejas[(parejas['Interaction (Valor)_a'] == 1) & (parejas['Interaction (Valor)_b'] == 1)]) #Cuenta parejas recíprocas positivas
+        l_neg += len(parejas[(parejas['Interaction (Valor)_a'] == -1) & (parejas['Interaction (Valor)_b'] == -1)]) #Cuenta parejas recíprocas negativas
+
+        partes = nombre_base.split('vs') if 'vs' in nombre_base else [nombre_base, "N/A"]
+        dicc_m[nombre_base] = {
+            'Tipo 1': partes[0].strip(), 'Tipo 2': partes[1].strip(), 
+            'N nodos': len(G.nodes()), 
+            'Inter +': int_pos, 'Inter -': int_neg, #Suma de interacciones positivas y negativas
+            'Loops +': l_pos, 'Loops -': l_neg #Suma de loops positivos y negativos
+        }
+
+    except Exception as e:
+        print(f"Error en {nombre_base}: {e}")
+
+
+df_final = pd.DataFrame.from_dict(dicc_m, orient='index')
+df_final.to_csv(ruta_tabla_final, index=False, sep=",", encoding='utf-8')
+```
